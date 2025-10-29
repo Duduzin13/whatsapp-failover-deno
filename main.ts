@@ -6,25 +6,27 @@ export default {
     const url = new URL(req.url);
     console.log(`🔹 [FETCH] ${req.method} ${url.pathname}`);
 
+    // --- Validação do Meta (Webhook GET) ---
     if (url.pathname === "/webhook" && req.method === "GET") {
       const mode = url.searchParams.get("hub.mode");
       const token = url.searchParams.get("hub.verify_token");
       const challenge = url.searchParams.get("hub.challenge");
-    
+
       if (mode === "subscribe" && token === env.VERIFY_TOKEN) {
         console.log("✅ [VERIFY] Token verificado com sucesso");
         return new Response(challenge, { status: 200 });
       }
-    
+
       console.log("❌ [VERIFY] Token inválido ou modo incorreto");
       return new Response("Forbidden", { status: 403 });
     }
 
+    // --- Webhook POST (mensagens recebidas) ---
     if (url.pathname === "/webhook" && req.method === "POST") {
       let payload: any = {};
       try { payload = await req.json(); } catch {}
       const phones = extractPhones(payload);
-      console.log(`📩 [WEBHOOK] Mensagem de ${phones.join(", ") || "N/D"}`);
+      console.log(`📩 [WEBHOOK] Mensagem recebida de ${phones.join(", ") || "N/D"}`);
 
       const healthy = await isOriginHealthy(env);
       console.log(`🩺 [HEALTH] Servidor está ${healthy ? "ONLINE ✅" : "OFFLINE ⚠️"}`);
@@ -50,6 +52,7 @@ export default {
       return new Response("Accepted", { status: 202 });
     }
 
+    // --- Teste manual (debug) ---
     if (url.pathname === "/_debug/testgraph") {
       const ok = await sendWhatsApp(env, "5511967512034", "🔧 Teste via Deno Deploy");
       return new Response(ok ? "✅ Enviado" : "❌ Falhou", { status: ok ? 200 : 500 });
