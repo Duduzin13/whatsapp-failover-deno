@@ -10,10 +10,13 @@ export default {
       const mode = url.searchParams.get("hub.mode");
       const token = url.searchParams.get("hub.verify_token");
       const challenge = url.searchParams.get("hub.challenge");
+    
       if (mode === "subscribe" && token === env.VERIFY_TOKEN) {
         console.log("✅ [VERIFY] Token verificado com sucesso");
         return new Response(challenge, { status: 200 });
       }
+    
+      console.log("❌ [VERIFY] Token inválido ou modo incorreto");
       return new Response("Forbidden", { status: 403 });
     }
 
