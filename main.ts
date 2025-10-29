@@ -12,21 +12,21 @@ export default {
       const token = url.searchParams.get("hub.verify_token");
       const challenge = url.searchParams.get("hub.challenge");
 
-      if (mode === "subscribe" && token === env.VERIFY_TOKEN) {
-        console.log("✅ [VERIFY] Token verificado com sucesso");
+      if (mode === "subscribe" && token === "iptv_webhook_2024") {
+        console.log("✅ Verificação bem-sucedida");
         return new Response(challenge, { status: 200 });
       }
 
-      console.log("❌ [VERIFY] Token inválido ou modo incorreto");
+      console.log("❌ Token inválido ou modo incorreto");
       return new Response("Forbidden", { status: 403 });
     }
 
-    // --- Webhook POST (mensagens recebidas) ---
+    // --- Webhook POST ---
     if (url.pathname === "/webhook" && req.method === "POST") {
       let payload: any = {};
       try { payload = await req.json(); } catch {}
       const phones = extractPhones(payload);
-      console.log(`📩 [WEBHOOK] Mensagem recebida de ${phones.join(", ") || "N/D"}`);
+      console.log(`📩 [WEBHOOK] Mensagem de ${phones.join(", ") || "N/D"}`);
 
       const healthy = await isOriginHealthy(env);
       console.log(`🩺 [HEALTH] Servidor está ${healthy ? "ONLINE ✅" : "OFFLINE ⚠️"}`);
@@ -58,7 +58,8 @@ export default {
       return new Response(ok ? "✅ Enviado" : "❌ Falhou", { status: ok ? 200 : 500 });
     }
 
-    return new Response("Not found", { status: 404 });
+    // Resposta padrão
+    return new Response("ok", { status: 200 });
   }
 };
 
